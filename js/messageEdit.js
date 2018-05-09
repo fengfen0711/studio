@@ -46,7 +46,7 @@ $(function() {
 	mEdit_headerImgSubmit();	
 	
 	//个人风采图片上传
-	mEdit_userImgSubmit(siId1,updateArr,userImgList);
+	mEdit_ImgSubmit(siId1);
 	
 })
 
@@ -54,8 +54,9 @@ $(function() {
 function userSignAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'query_personality_sign_jsons.tml',
+		url: URL1 + 'std/studio/queryStdSignList',
 		data: data,
+		contentType: 'application/json',
 		cache: false,
 		success: function(data) {
 			console.log(data)
@@ -127,9 +128,10 @@ function userSignSelect() {
 function userHonorAjax (data,spH) {
 	$.ajax({
 		type : 'post',
-		url : URL1 + 'query_personal_honor_jsons.tml',
+		url : URL1 + 'dic/findHonorTypeByModuleType',
 		data : data,
 		dataType : 'json',
+		contentType: 'application/json',
 		cache : false,
 		success : function(data) {
 			console.log(data)
@@ -161,9 +163,10 @@ function userHonorAjax (data,spH) {
 function workroomInfoAjax (data,updateArr) {
 	$.ajax({
 		type : 'post',
-		url : URL1 + 'query_workroom_info_jsons.tml',
+		url : URL1 + 'std/studio/queryStdInfo',
 		data : data,
 		dataType : 'json',
+		contentType: 'application/json',
 		cache : false,
 		success : function(data) {
 			console.log(data)
@@ -185,23 +188,24 @@ function workroomInfoAjax (data,updateArr) {
 				}else{
 					$("#mEdit_userCompanyInfo").removeAttr("disabled");
 				}
-				if (data.output.spPhotos && data.output.spPhotos != "") {
-					if (6>data.output.spPhotos.length>0) {
-						for (var i=0;i<data.output.spPhotos.length;i++) {
-							updateArr.push(data.output.spPhotos[i]);
-							$img = $('<span class="mEdit_appendImgBox"><img src="'+data.output.spPhotos[i]+'" class="mEdit_userImg" /><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>')
-							$(".mEdit_appendBtn").before($img)
-						}
-					}
-					else if (data.output.spPhotos.length >=6) {
-						$(".mEdit_appendBtn").css("display","none")
-						for (var i=0;i<data.output.spPhotos.length;i++) {
-							updateArr.push(data.output.spPhotos[i]);
-							$img = $('<span class="mEdit_appendImgBox"><img src="'+data.output.spPhotos[i]+'" class="mEdit_userImg" /><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>')
-							$(".mEdit_appendBtn").before($img)
-						}
-					}
-				}
+				$(".mEdit_addImg").attr("src",data.output.spPhotos)
+//				if (data.output.spPhotos && data.output.spPhotos != "") {
+//					if (6>data.output.spPhotos.length>0) {
+//						for (var i=0;i<data.output.spPhotos.length;i++) {
+//							updateArr.push(data.output.spPhotos[i]);
+//							$img = $('<span class="mEdit_appendImgBox"><img src="'+data.output.spPhotos[i]+'" class="mEdit_userImg" /><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>')
+//							$(".mEdit_appendBtn").before($img)
+//						}
+//					}
+//					else if (data.output.spPhotos.length >=6) {
+//						$(".mEdit_appendBtn").css("display","none")
+//						for (var i=0;i<data.output.spPhotos.length;i++) {
+//							updateArr.push(data.output.spPhotos[i]);
+//							$img = $('<span class="mEdit_appendImgBox"><img src="'+data.output.spPhotos[i]+'" class="mEdit_userImg" /><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>')
+//							$(".mEdit_appendBtn").before($img)
+//						}
+//					}
+//				}
 				var spH = data.output.spHonor.split(",");					
 				//个人荣誉选择
 				var userHonorInfo = {
@@ -223,22 +227,26 @@ function workroomInfoAjax (data,updateArr) {
 function userHeaderImgAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'upload_fms_batch_pic.tml?uploadType=2001',
+		url: URL2 + 'fastdfs/fileH5?uploadType=2001',
 		data: data,
 		cache: false,
 		processData: false,
 		contentType: false,
 		success: function(data) {
 			console.log(data)
-			var dataCode = data.status;
-			if(dataCode == '0000') {
-				$(".mEdit_headerImg1").attr("data-a",data.data[0].fileSerialNo);
+			$("#Shade").css("display", "none");
+			$(".agreeMz").css("display", "none");
+			var dataCode = data.code;
+			if(dataCode == 'SYS_S_000') {
+				$(".mEdit_headerImg1").attr("data-a",data.output.fileSerialNo);				
 			} else {
-				mui.alert(data.message);
+				mui.alert(data.desc);
 			}
 		},
 		error: function(data) {
 			console.log(data)
+			$("#Shade").css("display", "none");
+			$(".agreeMz").css("display", "none");
 		}
 	})
 }
@@ -249,6 +257,7 @@ function mEdit_headerImgSubmit() {
 	$("#file_mEdit_headerImg1").change(function() {
 		var fil = this.files;
 		data = this.files[0];
+		formData1.delete("file");
 		formData1.append("file", data)
 		for(var i = 0; i < fil.length; i++) {
 			reads(fil[i]);
@@ -260,149 +269,206 @@ function mEdit_headerImgSubmit() {
 		reader.readAsDataURL(fil);
 		reader.onload = function(e) {
 			$(".mEdit_headerImg1").attr("src", e.target.result);
+			$("#Shade").css("display", "block");
+			$(".agreeMz").css("display", "block");
 			userHeaderImgAjax(formData1);
 		}
 	}
 }
 
 //个人风采图片上传
-function mEdit_userImgSubmit(brokerId,updateArr,userImgList) {
-	var fileArr = [];
-	var delArr = [];
-	var formData = new FormData();
+function userImgAjax(data) {
+	$.ajax({
+		type: 'post',
+		url: URL2 + 'fastdfs/fileH5?uploadType=2020',
+		data: data,
+		cache: false,
+		processData: false,
+		contentType: false,
+		success: function(data) {
+			console.log(data)
+			var dataCode = data.code;
+			if(dataCode == 'SYS_S_000') {
+				$(".mEdit_addImg").attr("data-a",data.output.fileSerialNo);
+			} else {
+				mui.alert(data.desc);
+			}
+			$("#Shade").css("display", "none");
+			$(".agreeMz").css("display", "none");
+		},
+		error: function(data) {
+			console.log(data)
+			$("#Shade").css("display", "none");
+			$(".agreeMz").css("display", "none");
+		}
+	})
+}
 
+//风采上传
+function mEdit_ImgSubmit(brokerId) {
+	var formData = new FormData();
 	$("#file_mEdit_userImg").change(function() {
 		var fil = this.files;
 		data = this.files[0];
-		console.log(data)
-		if(fil.length > 0) {
-			fileArr.push(data);
-		}
+		formData.delete("file");
+		formData.append("file", data)
 		for(var i = 0; i < fil.length; i++) {
 			reads(fil[i]);
 		}
 	})
-	
-	
-	$(".mEdit_userImgBox").on('click', 'span img.mEdit_deleteImg', function() {
-		var index1 = $(".mEdit_userImgBox img.mEdit_deleteImg").index($(this));
-		delArr.push($(this).attr("src"));
-		$(this).parent().remove();
-//		console.log($(".mEdit_userImgBox .mEdit_appendImgBox").length == 5)
-		if($(".mEdit_userImgBox .mEdit_appendImgBox").length == 5) {
-			$(".mEdit_appendBtn").css("display", "inline-block")
-		}
-		for (var i=0; i < updateArr.length; i++) {
-			if ($(this).parent().find("img.mEdit_userImg").attr("src") == updateArr[i]) {
-				updateArr.splice(i, 1);
-			}
-		}
-		
-		fileArr.splice(index1, 1);
-	})
-	
-//	console.log(fileArr.length)
-	$(".mEdit_nextBtn").click(function(){
-		if (delArr.length>1) {
-			var delARRInfo = {
-				"fileSerialNo": delArr.join(",")
-			}
-			var delARR = JSON.stringify(delARRInfo);
-			userImgDelAjax(delARR)
-		}
-//		console.log(fileArr.length)
-		if (fileArr.length>0) {
-			console.log(updateArr)
-			for(var i = 0; i < fileArr.length; i++) {
-				formData.append('file', fileArr[i]);
-			}
-			$("#Shade").css("display", "block");
-			$(".agreeMz").css("display", "block");
-			userImgAjax(formData,brokerId,updateArr,userImgList);
-		}else{
-//			console.log(updateArr)			
-			userImgList = updateArr.join(",");
-			workroomSubmit (brokerId,userImgList);
-		}
-	})
-	
 
 	function reads(fil) {
 		var reader = new FileReader();
 		reader.readAsDataURL(fil);
 		reader.onload = function(e) {
-			if($(".mEdit_userImgBox .mEdit_appendImgBox").length >= 5) {
-				$("#mEdit_appendBtn").css("display", "none")
-			}
-			var $span = $('<span class="mEdit_appendImgBox"><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>');
-			var $img = $('<img src="' + e.target.result + '" class="mEdit_userImg" />');
-			$span.append($img)
-			$("#mEdit_appendBtn").before($span);
+			$(".mEdit_addImg").attr("src", e.target.result);
+			$("#Shade").css("display", "block");
+			$(".agreeMz").css("display", "block");
+			userImgAjax(formData);
 		}
 	}
+	$(".mEdit_nextBtn").click(function(){
+		workroomSubmit (brokerId);
+	})
+	
 }
+//个人风采图片上传
+//function mEdit_userImgSubmit(brokerId,updateArr,userImgList) {
+//	var fileArr = [];
+//	var delArr = [];
+//	var formData = new FormData();
+//
+//	$("#file_mEdit_userImg").change(function() {
+//		var fil = this.files;
+//		data = this.files[0];
+//		console.log(data)
+//		if(fil.length > 0) {
+//			fileArr.push(data);
+//		}
+//		for(var i = 0; i < fil.length; i++) {
+//			reads(fil[i]);
+//		}
+//	})
+//	
+//	
+//	$(".mEdit_userImgBox").on('click', 'span img.mEdit_deleteImg', function() {
+//		var index1 = $(".mEdit_userImgBox img.mEdit_deleteImg").index($(this));
+//		delArr.push($(this).attr("src"));
+//		$(this).parent().remove();
+//		if($(".mEdit_userImgBox .mEdit_appendImgBox").length == 5) {
+//			$(".mEdit_appendBtn").css("display", "inline-block")
+//		}
+//		for (var i=0; i < updateArr.length; i++) {
+//			if ($(this).parent().find("img.mEdit_userImg").attr("src") == updateArr[i]) {
+//				updateArr.splice(i, 1);
+//			}
+//		}
+//		
+//		fileArr.splice(index1, 1);
+//	})
+	
+//	console.log(fileArr.length)
+//	$(".mEdit_nextBtn").click(function(){
+//		if (delArr.length>1) {
+//			var delARRInfo = {
+//				"fileSerialNo": delArr.join(",")
+//			}
+//			var delARR = JSON.stringify(delARRInfo);
+//			userImgDelAjax(delARR)
+//		}
+////		console.log(fileArr.length)
+//		if (fileArr.length>0) {
+//			console.log(updateArr)
+//			for(var i = 0; i < fileArr.length; i++) {
+//				formData.append('file', fileArr[i]);
+//			}
+//			$("#Shade").css("display", "block");
+//			$(".agreeMz").css("display", "block");
+//			userImgAjax(formData,brokerId,updateArr,userImgList);
+//		}else{
+////			console.log(updateArr)			
+//			userImgList = updateArr.join(",");
+//			workroomSubmit (brokerId,userImgList);
+//		}
+//	})
+	
+
+//	function reads(fil) {
+//		var reader = new FileReader();
+//		reader.readAsDataURL(fil);
+//		reader.onload = function(e) {
+//			if($(".mEdit_userImgBox .mEdit_appendImgBox").length >= 5) {
+//				$("#mEdit_appendBtn").css("display", "none")
+//			}
+//			var $span = $('<span class="mEdit_appendImgBox"><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>');
+//			var $img = $('<img src="' + e.target.result + '" class="mEdit_userImg" />');
+//			$span.append($img)
+//			$("#mEdit_appendBtn").before($span);
+//		}
+//	}
+//}
 
 //个人风采图片上传
-function userImgAjax(data,brokerId,updateArr,userImgList) {
-	$.ajax({
-		type: 'post',
-		url : URL1 + 'upload_fms_batch_pic.tml?uploadType=2020',
-		data: data,
-		cache: false,
-		processData: false,
-		contentType: false,
-		success: function(data) {
-			console.log(data)
-			var dataCode = data.status;
-			if (dataCode == '0000') {
-				var newUserImg = [];
-				for (var i=0;i<data.data.length;i++) {
-					updateArr.push(data.data[i].fileSerialNo);
-					newUserImg.push(data.data[i].fileSerialNo);
-				}
-				var userImgInfo = newUserImg.join(",");
-				console.log(updateArr.join(","))
-				userImgList = updateArr.join(",");
-				workroomSubmit (brokerId,userImgList);
-				
-			}else{
-				mui.alert(data.message);
-			}
-			$(".Shade").css("display", "none");
-			$(".agreeMz").css("display", "none");
-		},
-		error: function(data) {
-			console.log(data)
-		}
-	})
-}
+//function userImgAjax(data,brokerId,updateArr,userImgList) {
+//	$.ajax({
+//		type: 'post',
+//		url : URL1 + 'upload_fms_batch_pic.tml?uploadType=2020',
+//		data: data,
+//		cache: false,
+//		processData: false,
+//		contentType: false,
+//		success: function(data) {
+//			console.log(data)
+//			var dataCode = data.status;
+//			if (dataCode == '0000') {
+//				var newUserImg = [];
+//				for (var i=0;i<data.data.length;i++) {
+//					updateArr.push(data.data[i].fileSerialNo);
+//					newUserImg.push(data.data[i].fileSerialNo);
+//				}
+//				var userImgInfo = newUserImg.join(",");
+//				console.log(updateArr.join(","))
+//				userImgList = updateArr.join(",");
+//				workroomSubmit (brokerId,userImgList);
+//				
+//			}else{
+//				mui.alert(data.message);
+//			}
+//			$(".Shade").css("display", "none");
+//			$(".agreeMz").css("display", "none");
+//		},
+//		error: function(data) {
+//			console.log(data)
+//		}
+//	})
+//}
 
 //个人风采图片删除
-function userImgDelAjax(data) {
-	$.ajax({
-		type: 'post',
-		url : URL1 + 'del_fms_batch_pic_jsons.tml',
-		data: data,
-		cache: false,
-		processData: false,
-		contentType: false,
-		success: function(data) {
-			console.log(data)
-			var dataCode = data.status;
-			if (dataCode == '0000') {
-				
-			}else{
-				mui.alert(data.message);
-			}
-		},
-		error: function(data) {
-			console.log(data)
-		}
-	})
-}
+//function userImgDelAjax(data) {
+//	$.ajax({
+//		type: 'post',
+//		url : URL1 + 'del_fms_batch_pic_jsons.tml',
+//		data: data,
+//		cache: false,
+//		processData: false,
+//		contentType: false,
+//		success: function(data) {
+//			console.log(data)
+//			var dataCode = data.status;
+//			if (dataCode == '0000') {
+//				
+//			}else{
+//				mui.alert(data.message);
+//			}
+//		},
+//		error: function(data) {
+//			console.log(data)
+//		}
+//	})
+//}
 
 //工作室提交信息
-function workroomSubmit (brokerId,userImgList) {
+function workroomSubmit (brokerId) {
 	if ($(".mEdit_headerImg").attr("src") != "img/mEdit_headerImg.png") {
 		if ($("#mEdit_userStudio").val()) {
 			if ($("#mEdit_userName").val()) {
@@ -423,7 +489,7 @@ function workroomSubmit (brokerId,userImgList) {
 						spDesc : $("#mEdit_userInfo").val(),
 						spHonor : spHonorInfo,
 						spName : $("#mEdit_userName").val(),
-						spPhotos : userImgList,
+						spPhotos : $(".mEdit_addImg").attr("data-a"),
 						spPic : $(".mEdit_headerImg1").attr("data-a"),
 						spSign : $("#mEdit_userSignInfo").val(),
 						stdName : $("#mEdit_userStudio").val()
@@ -453,11 +519,14 @@ function workroomSubmit (brokerId,userImgList) {
 function workroomSubmitAjax (data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'update_workroom_info_jsons.tml',
+		url: URL1 + 'std/studio/updateStdInfo',
 		data: data,
+		contentType: 'application/json',
 		cache: false,
 		success: function(data) {
-			console.log(data)
+			console.log(data)			
+			$("#Shade").css("display", "none");
+			$(".agreeMz").css("display", "none");
 			var dataCode = data.code;
 			if(dataCode == 'SYS_S_000') {
 				Tiny.execute("openshow()")
@@ -465,10 +534,10 @@ function workroomSubmitAjax (data) {
 			} else {
 				mui.alert(data.desc)
 			}
-			$("#Shade").css("display", "none");
-			$(".agreeMz").css("display", "none");
 		},
 		error: function(data) {
+			$("#Shade").css("display", "none");
+			$(".agreeMz").css("display", "none");
 			console.log(data)
 		}
 	})

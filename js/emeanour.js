@@ -13,9 +13,10 @@ $(function(){
 	var emeanour_data = JSON.stringify(emeanour_data);
 	$.ajax({
 		type : 'post',
-		url : URL1 + 'query_workroom_info_jsons.tml',
+		url : URL1 + 'std/studio/queryStdInfo',
 		data : emeanour_data,
 		dataType : 'json',
+		contentType: 'application/json',
 		cache : false,
 		success : function(data) {
 			console.log(data);
@@ -67,9 +68,10 @@ function userHonorAjax (spH) {
 //	userHonorAjax(userHonor,spH);
 	$.ajax({
 		type : 'post',
-		url : URL1 + 'query_personal_honor_jsons.tml',
+		url : URL1 + 'dic/findHonorTypeByModuleType',
 		data : userHonor,
 		dataType : 'json',
+		contentType: 'application/json',
 		cache : false,
 		success : function(data) {
 			console.log(data)

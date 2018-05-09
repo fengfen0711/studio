@@ -28,9 +28,10 @@
 		var data=JSON.stringify(str)
 		console.log(data)
 		$.ajax({
-			url:URL1+"query_std_prod_list_jsons.tml",
+			url:URL1+"std/studio/queryStdPrdList",
 			type:"POST",
 			data:data,
+			contentType: 'application/json',
 			success:function(res){
 				console.log(res)
 				var list=res.output,html="";
@@ -97,8 +98,9 @@
 		var data=JSON.stringify(str)
 		console.log(data)
 		$.ajax({
-			url:URL1+"del_std_prod_info_jsons.tml",
+			url:URL1+"std/studio/delStdPrd",
 			type:"POST",
+			contentType: 'application/json',
 			data:data,
 			success:function(res){
 				console.log(res)

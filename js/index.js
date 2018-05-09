@@ -13,9 +13,10 @@
 			var data=JSON.stringify(str)
 			console.log(data)
 			$.ajax({
-				url:URL1+"query_workroom_info_jsons.tml",
+				url:URL1+"std/studio/queryStdInfo",
 				type:"POST",
 				data:data,
+				contentType: 'application/json',
 				success:function(res){
 					console.log(res)
 					$('.img').attr("src",res.output.spPic)
@@ -57,9 +58,10 @@
 			var data=JSON.stringify(str)
 			console.log(data)
 			$.ajax({
-				url:URL1+"query_std_prod_list_jsons.tml",
+				url:URL1+"std/studio/queryStdPrdList",
 				type:"POST",
 				data:data,
+				contentType: 'application/json',
 				success:function(res){
 					console.log(res)
 					if(res.output!=undefined){

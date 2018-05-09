@@ -45,7 +45,7 @@ $(function() {
 	})
 
 	//个人风采图片上传
-	mEdit_userImgSubmit(brokerId, brokerPhone,userImgList);
+	mEdit_ImgSubmit(brokerId, brokerPhone);
 
 })
 
@@ -53,9 +53,10 @@ $(function() {
 function userHonorAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'query_personal_honor_jsons.tml',
+		url: URL1 + 'dic/findHonorTypeByModuleType',
 		data: data,
 		dataType: 'json',
+		contentType: 'application/json',
 		cache: false,
 		success: function(data) {
 			console.log(data)
@@ -79,19 +80,18 @@ function userHonorAjax(data) {
 function userHeaderImgAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'upload_fms_batch_pic.tml?uploadType=2001',
+		url: URL2 + 'fastdfs/fileH5?uploadType=2001',
 		data: data,
 		cache: false,
 		processData: false,
 		contentType: false,
 		success: function(data) {
 			console.log(data)
-			var dataCode = data.status;
-			if(dataCode == '0000') {
-				$(".mEdit_headerImg").attr("data-a",data.data[0].fileSerialNo)
-//				userHeaderImg = data.data[0].fileSerialNo;
+			var dataCode = data.code;
+			if(dataCode == 'SYS_S_000') {
+				$(".mEdit_headerImg").attr("data-a",data.output.fileSerialNo);
 			} else {
-				mui.alert(data.message);
+				mui.alert(data.desc);
 			}
 		},
 		error: function(data) {
@@ -106,6 +106,7 @@ function mEdit_headerImgSubmit() {
 	$("#file_mEdit_headerImg").change(function() {
 		var fil = this.files;
 		data = this.files[0];
+		formData1.delete("file");
 		formData1.append("file", data)
 		for(var i = 0; i < fil.length; i++) {
 			reads(fil[i]);
@@ -123,31 +124,22 @@ function mEdit_headerImgSubmit() {
 }
 
 //个人风采图片上传
-function userImgAjax(data, brokerId, brokerPhone,userImgList) {
+function userImgAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'upload_fms_batch_pic.tml?uploadType=2020',
+		url: URL2 + 'fastdfs/fileH5?uploadType=2020',
 		data: data,
 		cache: false,
 		processData: false,
 		contentType: false,
 		success: function(data) {
 			console.log(data)
-			var dataCode = data.status;
-			if(dataCode == '0000') {
-				var newUserImg = []
-				for(var i = 0; i < data.data.length; i++) {
-					newUserImg.push(data.data[i].fileSerialNo);
-				}
-				var userImgInfo = newUserImg.join(",")
-				console.log(userImgInfo)
-				userImgList = userImgInfo;
-				workroomSubmit(brokerId, brokerPhone,userImgList);
+			var dataCode = data.code;
+			if(dataCode == 'SYS_S_000') {
+				$(".mEdit_addImg").attr("data-a",data.output.fileSerialNo);
 			} else {
-				mui.alert(data.message);
+				mui.alert(data.desc);
 			}
-			$(".Shade").css("display", "none");
-			$(".agreeMz").css("display", "none");
 		},
 		error: function(data) {
 			console.log(data)
@@ -155,40 +147,16 @@ function userImgAjax(data, brokerId, brokerPhone,userImgList) {
 	})
 }
 
-//个人风采图片上传
-function mEdit_userImgSubmit(brokerId, brokerPhone,userImgList) {
-	var fileArr = [];
+//个人风采上传
+function mEdit_ImgSubmit(brokerId, brokerPhone) {
 	var formData = new FormData();
 	$("#file_mEdit_userImg").change(function() {
 		var fil = this.files;
 		data = this.files[0];
-		if(fil.length > 0) {
-			fileArr.push(data);
-		}
+		formData.delete("file");
+		formData.append("file", data);
 		for(var i = 0; i < fil.length; i++) {
 			reads(fil[i]);
-		}
-	})
-	$(".mEdit_userImgBox").on('click', 'span img.mEdit_deleteImg', function() {
-		var index1 = $(".mEdit_userImgBox img.mEdit_deleteImg").index($(this));
-		$(this).parent().remove();
-		if($(".mEdit_userImgBox .mEdit_appendImgBox").length < 6) {
-			$(".mEdit_appendBtn").css("display", "inline-block")
-		}
-		fileArr.splice(index1, 1);
-	})
-	$(".mAdd_nextBtn").click(function() {
-		if(fileArr.length > 0) {
-			for(var i = 0; i < fileArr.length; i++) {
-				formData.append('file', fileArr[i]);
-			}
-			$("#Shade").css("display", "block");
-			$(".agreeMz").css("display", "block");
-			
-			userImgAjax(formData, brokerId, brokerPhone,userImgList);
-		} else {
-			
-			workroomSubmit(brokerId, brokerPhone,userImgList);
 		}
 	})
 
@@ -196,23 +164,108 @@ function mEdit_userImgSubmit(brokerId, brokerPhone,userImgList) {
 		var reader = new FileReader();
 		reader.readAsDataURL(fil);
 		reader.onload = function(e) {
-			if($(".mEdit_userImgBox .mEdit_appendImgBox").length >= 5) {
-				$(".mEdit_appendBtn").css("display", "none")
-			}
-			var $span = $('<span class="mEdit_appendImgBox"><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>');
-			var $img = $('<img src="' + e.target.result + '" class="mEdit_userImg" />');
-			$span.append($img)
-			$(".mEdit_appendBtn").before($span);
+			$(".mEdit_addImg").attr("src", e.target.result);
+			userImgAjax(formData);
 		}
 	}
+	
+	$(".mAdd_nextBtn").click(function() {
+		workroomSubmit(brokerId, brokerPhone);
+	})
 }
+
+//个人风采图片上传
+//function userImgAjax(data, brokerId, brokerPhone,userImgList) {
+//	$.ajax({
+//		type: 'post',
+//		url: URL1 + 'upload_fms_batch_pic.tml?uploadType=2020',
+//		data: data,
+//		cache: false,
+//		processData: false,
+//		contentType: false,
+//		success: function(data) {
+//			console.log(data)
+//			var dataCode = data.status;
+//			if(dataCode == '0000') {
+//				var newUserImg = []
+//				for(var i = 0; i < data.data.length; i++) {
+//					newUserImg.push(data.data[i].fileSerialNo);
+//				}
+//				var userImgInfo = newUserImg.join(",")
+//				console.log(userImgInfo)
+//				userImgList = userImgInfo;
+//				workroomSubmit(brokerId, brokerPhone,userImgList);
+//			} else {
+//				mui.alert(data.message);
+//			}
+//			$(".Shade").css("display", "none");
+//			$(".agreeMz").css("display", "none");
+//		},
+//		error: function(data) {
+//			console.log(data)
+//		}
+//	})
+//}
+
+//个人风采图片上传
+//function mEdit_userImgSubmit(brokerId, brokerPhone,userImgList) {
+//	var fileArr = [];
+//	var formData = new FormData();
+//	$("#file_mEdit_userImg").change(function() {
+//		var fil = this.files;
+//		data = this.files[0];
+//		if(fil.length > 0) {
+//			fileArr.push(data);
+//		}
+//		for(var i = 0; i < fil.length; i++) {
+//			reads(fil[i]);
+//		}
+//	})
+//	$(".mEdit_userImgBox").on('click', 'span img.mEdit_deleteImg', function() {
+//		var index1 = $(".mEdit_userImgBox img.mEdit_deleteImg").index($(this));
+//		$(this).parent().remove();
+//		if($(".mEdit_userImgBox .mEdit_appendImgBox").length < 6) {
+//			$(".mEdit_appendBtn").css("display", "inline-block")
+//		}
+//		fileArr.splice(index1, 1);
+//	})
+//	$(".mAdd_nextBtn").click(function() {
+//		if(fileArr.length > 0) {
+//			for(var i = 0; i < fileArr.length; i++) {
+//				formData.append('file', fileArr[i]);
+//			}
+//			$("#Shade").css("display", "block");
+//			$(".agreeMz").css("display", "block");
+//			
+//			userImgAjax(formData, brokerId, brokerPhone,userImgList);
+//		} else {
+//			
+//			workroomSubmit(brokerId, brokerPhone,userImgList);
+//		}
+//	})
+//
+//	function reads(fil) {
+//		var reader = new FileReader();
+//		reader.readAsDataURL(fil);
+//		reader.onload = function(e) {
+//			if($(".mEdit_userImgBox .mEdit_appendImgBox").length >= 5) {
+//				$(".mEdit_appendBtn").css("display", "none")
+//			}
+//			var $span = $('<span class="mEdit_appendImgBox"><img src="img/mEdit_delete.png" class="mEdit_deleteImg" /></span>');
+//			var $img = $('<img src="' + e.target.result + '" class="mEdit_userImg" />');
+//			$span.append($img)
+//			$(".mEdit_appendBtn").before($span);
+//		}
+//	}
+//}
 
 //个人签名接口
 function userSignAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'query_personality_sign_jsons.tml',
+		url: URL1 + 'std/studio/queryStdSignList',
 		data: data,
+		contentType: 'application/json',
 		cache: false,
 		success: function(data) {
 			console.log(data)
@@ -302,7 +355,7 @@ function workroomSubmit(brokerId, brokerPhone,userImgList) {
 						spDesc: $("#mEdit_userDes").val(),
 						spHonor: spHonorInfo,
 						spName: $("#mEdit_userName").val(),
-						spPhotos: userImgList,
+						spPhotos: $(".mEdit_addImg").attr("data-a"),
 						spPic: $(".mEdit_headerImg").attr("data-a"),
 						spSign: $("#mEdit_userSignInfo").val(),
 						stdName: $("#mEdit_userStudio").val(),
@@ -332,8 +385,9 @@ function workroomSubmit(brokerId, brokerPhone,userImgList) {
 function workroomSubmitAjax(data) {
 	$.ajax({
 		type: 'post',
-		url: URL1 + 'update_workroom_info_jsons.tml',
+		url: URL1 + 'std/studio/updateStdInfo',
 		data: data,
+		contentType: 'application/json',
 		cache: false,
 		success: function(data) {
 			console.log(data)

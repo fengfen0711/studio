@@ -4,8 +4,9 @@ function getList(){
 	}
 	var data=JSON.stringify(str)
 	$.ajax({
-		url:URL1+"query_prod_classification_jsons.tml",
+		url:URL1+"prd/prod/taglist",
 		type:"POST",
+		contentType: 'application/json',
 		data:data,
 		success:function(res){
 			var list=res.output,html=""

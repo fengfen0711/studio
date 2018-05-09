@@ -21,9 +21,10 @@ $(function () {
 function workroomInfoAjax (data) {
 	$.ajax({
 		type : 'post',
-		url : URL1 + 'query_workroom_info_jsons.tml',
+		url : URL1 + 'std/studio/queryStdInfo',
 		data : data,
 		dataType : 'json',
+		contentType: 'application/json',
 		cache : false,
 		success : function(data) {
 			console.log(data)
@@ -38,7 +39,7 @@ function workroomInfoAjax (data) {
 				$("#mEdit_userWork").val(data.output.spBehavior);
 				$("#mEdit_userSignInfo").val(data.output.spSign);
 				$("#mEdit_userInfo").val(data.output.spDesc);
-				if (data.output.spPhotos.length>0) {
+				if (data.output.spPhotos && data.output.spPhotos.length>0) {
 					$(".mEdit_userImgBox").html("");
 					for (var i=0;i<data.output.spPhotos.length;i++) {
 						$img = $('<span class="mEdit_appendImgBox"><img src="'+data.output.spPhotos[i]+'" class="mEdit_userImg" /></span>')
@@ -75,9 +76,10 @@ function workroomInfoAjax (data) {
 function userHonorAjax (data,spH) {
 	$.ajax({
 		type : 'post',
-		url : URL1 + 'query_personal_honor_jsons.tml',
+		url : URL1 + 'dic/findHonorTypeByModuleType',
 		data : data,
 		dataType : 'json',
+		contentType: 'application/json',
 		cache : false,
 		success : function(data) {
 			console.log(data)

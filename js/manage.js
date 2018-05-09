@@ -41,9 +41,10 @@
 			var data=JSON.stringify(str)
 			console.log(data)
 			$.ajax({
-				url:URL1+"query_std_prod_list_jsons.tml",
+				url:URL1+"std/studio/queryStdPrdList",
 				type:"POST",
 				data:data,
+				contentType: 'application/json',
 				success:function(res){
 					console.log(res)
 					$('#search_input').blur()
@@ -123,9 +124,10 @@
 				var data=JSON.stringify(str)
 				console.log(data)
 				$.ajax({
-					url:URL1+"add_std_prod_info_jsons.tml",
+					url:URL1+"std/studio/addStdPrd",
 					type:"POST",
 					data:data,
+					contentType: 'application/json',
 					success:function(res){
 						console.log(res)
 						arr=[]
